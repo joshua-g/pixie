@@ -1,9 +1,10 @@
 from pixie.vm.compiler import with_ns, NS_VAR
 from pixie.vm.reader import StringReader
 from rpython.jit.codewriter.policy import JitPolicy
-from rpython.rlib.jit import JitHookInterface, Counters
+from rpython.rlib.jit import JitHookInterface, Counters, set_user_param
 from rpython.rlib.rfile import create_stdio
 from rpython.annotator.policy import AnnotatorPolicy
+from pixie.vm.interpreter import jitdriver
 from pixie.vm.code import wrap_fn, NativeFn, intern_var, Var
 from pixie.vm.object import WrappedException
 from rpython.translator.platform import platform
@@ -179,6 +180,7 @@ def entry_point(args):
                     print "  -e, --eval=<expr>      evaluate the given expression"
                     print "  -l, --load-path=<path> add <path> to pixie.stdlib/load-paths"
                     print "  -c, --compile=<file>   compile <path> to a .pxic file"
+                    print "  --jit <p1>=<v1>,...    set advanced JIT parameters"
                     return 0
                 elif arg == '-e' or arg == '--eval':
                     i += 1
@@ -205,6 +207,17 @@ def entry_point(args):
                         print "Compiling ", path
                         run_with_stacklets.invoke([CompileFileFn(path)])
                         exit = True
+                    else:
+                        print "Expected argument for " + arg
+                        return 1
+                elif arg == "--jit":
+                    i += 1
+                    if i < len(args):
+                        try:
+                            set_user_param(jitdriver, args[i])
+                        except ValueError:
+                            print "Invalid parameters for " + arg
+                            return 1
                     else:
                         print "Expected argument for " + arg
                         return 1
