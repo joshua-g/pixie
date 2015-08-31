@@ -615,35 +615,35 @@ returns true"
    :signatures [[x]]
    :added "0.1"}
   [x]
-  (> x 0))
+  (-gt x 0))
 
 (defn neg?
   {:doc "Returns true if x is less than zero"
    :signatures [[x]]
    :added "0.1"}
   [x]
-  (< x 0))
+  (-lt x 0))
 
 (defn zero?
   {:doc "Returns true if x is equal to zero"
    :signatures [[x]]
    :added "0.1"}
   [x]
-  (= x 0))
+  (eq x 0))
 
 (defn inc
   {:doc "Increments x by one"
    :signatures [[x]]
    :added "0.1"}
   [x]
-  (+ x 1))
+  (-add x 1))
 
 (defn dec
   {:doc "Decrements x by one"
    :signatures [[x]]
    :added "0.1"}
   [x]
-  (- x 1))
+  (-sub x 1))
 
 (defn empty?
   {:doc "returns true if the collection has no items, otherwise false"
@@ -689,7 +689,7 @@ returns true"
    :signatures [[coll]]
    :added "0.1"}
   [coll]
-  (if (satisfies? IIndexed coll)
+  (if (-satisfies? IIndexed coll)
     (nth coll 0 nil)
     (-first coll)))
 
@@ -1437,10 +1437,12 @@ and implements IAssociative, ILookup and IObject."
   {:doc "Swaps the value in the atom, by applying f to the current value.
 
 The new value is thus `(apply f current-value-of-atom args)`."
-   :signatures [[atom f & args]]
+   :signatures [[atom f] [atom f & args]]
    :added "0.1"}
-  [a f & args]
-  (reset! a (apply f @a args)))
+  ([a f]
+   (-reset! a (f @a)))
+  ([a f & args]
+   (-reset! a (apply f @a args))))
 
 (defn nil? [x]
   (identical? x nil))
