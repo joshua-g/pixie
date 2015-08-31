@@ -91,7 +91,7 @@ def slice_from_start(from_list, count, extra=r_uint(0)):
 
 
 class BaseCode(object.Object):
-    _immutable_fields_ = ["_meta"]
+    _immutable_fields_ = ["_name", "_meta"]
     def __init__(self):
         assert isinstance(self, BaseCode)
         self._name = u"unknown"
@@ -215,7 +215,7 @@ class NativeFn(BaseCode):
 class Code(BaseCode):
     """Interpreted code block. Contains consts and """
     _type = object.Type(u"pixie.stdlib.Code")
-    _immutable_fields_ = ["_arity", "_consts[*]", "_bytecode", "_stack_size", "_meta"]
+    _immutable_fields_ = ["_arity", "_consts[*]", "_bytecode", "_stack_size", "_debug_points", "_meta"]
 
     def type(self):
         return Code._type
