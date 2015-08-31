@@ -307,6 +307,11 @@
 (extend -reduce Buffer indexed-reduce)
 (extend -reduce String indexed-reduce)
 
+(extend -str Var
+  (fn [v]
+    (str "(var " (namespace v) "/" (name v) ")")))
+(extend -repr Var -str)
+
 (extend -str Bool
   (fn [x]
     (if (identical? x true)
