@@ -535,6 +535,8 @@ class Namespace(object.Object):
 
         name = rt.name(sym)
         prev_binding = self._registry.get(name, None)
+        if prev_binding == var:
+            return var
         if prev_binding is not None:
             print rt.name(rt.str(rt.wrap(u"Warning: "), sym, rt.wrap(u" already refers to "), prev_binding))
 
