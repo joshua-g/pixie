@@ -744,10 +744,11 @@ def compile_var(form, ctx):
     affirm(isinstance(name, symbol.Symbol), u"var name must be a symbol")
 
     if rt.namespace(name) is not None:
-        var = code._ns_registry.find_or_make(rt.namespace(name))
+        namespace = code._ns_registry.find_or_make(rt.namespace(name))
     else:
-        var = NS_VAR.deref().intern_or_make(rt.name(name))
+        namespace = NS_VAR.deref()
 
+    var = namespace.intern_or_make(rt.name(name))
     ctx.push_const(var)
 
 def compile_catch(form, ctx):
