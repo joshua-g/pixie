@@ -26,6 +26,7 @@ EMPTY_NODE = Node(None)
 
 class PersistentVector(object.Object):
     _type = object.Type(u"pixie.stdlib.PersistentVector")
+    _immutable_fields_ = ["_meta", "_cnt", "_shift", "_root", "_tail[*]"]
 
     def type(self):
         return PersistentVector._type
@@ -37,17 +38,21 @@ class PersistentVector(object.Object):
         self._root = root
         self._tail = tail
 
+    @jit.elidable
     def meta(self):
         return self._meta
 
+    @jit.elidable
     def with_meta(self, meta):
         return PersistentVector(meta, self._cnt, self._shift, self._root, self._tail)
 
+    @jit.elidable
     def tailoff(self):
         if self._cnt < 32:
             return 0
         return ((self._cnt - 1) >> 5) << 5
 
+    @jit.elidable
     def array_for(self, i):
         if 0 <= i < self._cnt:
             if i >= self.tailoff():
@@ -64,6 +69,7 @@ class PersistentVector(object.Object):
 
         affirm(False, u"Index out of Range")
 
+    @jit.elidable
     def nth(self, i, not_found=None):
         if 0 <= i < self._cnt:
             node = self.array_for(r_uint(i))
@@ -74,12 +80,12 @@ class PersistentVector(object.Object):
         else:
             return not_found
 
+    @jit.elidable
     def conj(self, val):
         assert self._cnt < r_uint(0xFFFFFFFF)
 
         if self._cnt - self.tailoff() < 32:
-            new_tail = self._tail[:]
-            new_tail.append(val)
+            new_tail = self._tail + [val]
             return PersistentVector(self._meta, self._cnt + 1, self._shift, self._root, new_tail)
 
         root = self._root
@@ -102,6 +108,7 @@ class PersistentVector(object.Object):
 
         return PersistentVector(self._meta, self._cnt + 1, new_shift, new_root, [val])
 
+    @jit.elidable
     def push_tail(self, level, parent, tail_node):
         subidx = ((self._cnt - 1) >> level) & 0x01f
         assert isinstance(parent, Node)
@@ -122,6 +129,7 @@ class PersistentVector(object.Object):
         ret._array[subidx] = node_to_insert
         return ret
 
+    @jit.elidable
     def pop(self):
         affirm(self._cnt != 0, u"Can't pop an empty vector")
 
@@ -147,6 +155,7 @@ class PersistentVector(object.Object):
 
         return PersistentVector(self._meta, self._cnt - 1, new_shift, new_root, new_tail)
 
+    @jit.elidable
     def pop_tail(self, level, node):
         sub_idx = ((self._cnt - 1) >> level) & 0x01f
         if level > 5:
@@ -172,6 +181,7 @@ class PersistentVector(object.Object):
             ret._array[sub_idx] = None
             return ret
 
+    @jit.elidable
     def assoc_at(self, idx, val):
         if idx >= 0 and idx < self._cnt:
             if idx >= self.tailoff():
@@ -540,6 +550,8 @@ def _reduce(self, f, init):
 
 @as_var("vector")
 def vector__args(args):
+    if not args:
+        return EMPTY
     acc = rt._transient(EMPTY)
     for x in range(len(args)):
         acc = rt._conj_BANG_(acc, args[x])
